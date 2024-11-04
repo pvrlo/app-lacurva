@@ -1,3 +1,4 @@
 # la_curva
 
-A new Flutter project.
+v1.0
+Avance con la funcionalidad para agregar habitaciones.

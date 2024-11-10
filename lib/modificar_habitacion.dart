@@ -13,71 +13,191 @@ class ModificarHabitacionScreen extends StatefulWidget {
 }
 
 class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
+  List<Map<String, dynamic>> habitaciones = [];
+  bool isLoading = true;
+
   final TextEditingController numeroController = TextEditingController();
   TipoHabitacion nuevoTipo = TipoHabitacion.privada; // Valor por defecto
-  final TextEditingController nuevaCapacidadController = TextEditingController();
+  int nuevaCapacidad = 1; // Capacidad por defecto
   final TextEditingController nuevoPrecioController = TextEditingController();
   final TextEditingController nuevoPrepagoController = TextEditingController();
   final TextEditingController nuevaDescripcionController = TextEditingController();
-  
   String nuevaDisponibilidad = 'Sí';
-  bool isLoading = false;
+  final TextEditingController imagenController = TextEditingController(); // Campo de imagen
 
-  Future<void> obtenerDetallesHabitacion() async {
-    if (numeroController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingrese el número de la habitación')),
-      );
-      return;
-    }
+  @override
+  void initState() {
+    super.initState();
+    obtenerListaHabitaciones();
+  }
 
-    setState(() {
-      isLoading = true; // Cambiamos el estado a cargando
-    });
-
+  Future<void> obtenerListaHabitaciones() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost/lista_habitacion.php?numero=${numeroController.text}'),
-      );
+      final response = await http.get(Uri.parse('http://localhost/lista_habitacion.php'));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data != null && data.isNotEmpty) {
-          setState(() {
-            // Asignamos los valores asegurándonos de que se están manejando como Strings
-            nuevoTipo = data['tipo'] == 'privada' ? TipoHabitacion.privada : TipoHabitacion.compartida; // Usamos el enum
-            nuevaCapacidadController.text = data['capacidad'].toString();
-            nuevoPrecioController.text = data['precio_noche'].toString();
-            nuevoPrepagoController.text = data['prepago_noche'].toString();
-            nuevaDescripcionController.text = data['descripcion'] ?? '';
-            nuevaDisponibilidad = data['disponible'] == '1' ? 'Sí' : 'No'; // Manejo de disponibilidad
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No se encontró la habitación')),
-          );
-        }
+        setState(() {
+          habitaciones = List<Map<String, dynamic>>.from(json.decode(response.body));
+          isLoading = false;
+        });
       } else {
-        print('Error al obtener detalles de la habitación: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al obtener los detalles de la habitación')),
-        );
+        throw Exception('Error al cargar la lista de habitaciones');
       }
     } catch (e) {
-      print('Ocurrió un error al obtener la habitación: $e');
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ocurrió un error: $e')),
       );
-    } finally {
-      setState(() {
-        isLoading = false; // Cambiamos el estado a no cargando
-      });
     }
+  }
+
+  void abrirFormularioModificar(Map<String, dynamic> habitacion) {
+    setState(() {
+      // Rellenar los datos del formulario con los detalles de la habitación seleccionada
+      numeroController.text = habitacion['numero'].toString();
+      nuevoTipo = habitacion['tipo'] == 'privada' ? TipoHabitacion.privada : TipoHabitacion.compartida;
+      nuevaCapacidad = int.tryParse(habitacion['capacidad'].toString()) ?? 1;
+      nuevoPrecioController.text = habitacion['precio_noche'].toString();
+      nuevoPrepagoController.text = habitacion['prepago_noche'].toString();
+      nuevaDescripcionController.text = habitacion['descripcion'] ?? '';
+      nuevaDisponibilidad = habitacion['disponible'] == '1' ? 'Sí' : 'No';
+      imagenController.text = habitacion['imagen'] ?? ''; // Agregar campo de imagen
+    });
+
+    // Navegar a una nueva pantalla que contiene el formulario de modificación
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text('Modificar Habitación'),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                TextField(
+                  controller: numeroController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Número de habitación',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<TipoHabitacion>(
+                  decoration: InputDecoration(
+                    labelText: 'Tipo de habitación',
+                    border: OutlineInputBorder(),
+                  ),
+                  value: nuevoTipo,
+                  items: TipoHabitacion.values.map((TipoHabitacion tipo) {
+                    return DropdownMenuItem<TipoHabitacion>(
+                      value: tipo,
+                      child: Text(tipo.toString().split('.').last),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      nuevoTipo = newValue!;
+                    });
+                  },
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  decoration: InputDecoration(
+                    labelText: 'Capacidad (número de personas)',
+                    border: OutlineInputBorder(),
+                  ),
+                  value: nuevaCapacidad,
+                  items: [1, 2, 3, 4].map((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(value.toString()),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      nuevaCapacidad = newValue!;
+                    });
+                  },
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: nuevoPrecioController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Precio por noche',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: nuevoPrepagoController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Prepago por noche',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: nuevaDescripcionController,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: 'Descripción',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Disponibilidad',
+                    border: OutlineInputBorder(),
+                  ),
+                  value: nuevaDisponibilidad,
+                  items: ['Sí', 'No'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      nuevaDisponibilidad = newValue!;
+                    });
+                  },
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: imagenController,
+                  decoration: InputDecoration(
+                    labelText: 'URL de la imagen (pendiente de funcionalidad)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: modificarHabitacion,
+                  child: Text('Modificar Habitación'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> modificarHabitacion() async {
     if (numeroController.text.isEmpty ||
-        nuevaCapacidadController.text.isEmpty ||
         nuevoPrecioController.text.isEmpty ||
         nuevoPrepagoController.text.isEmpty ||
         nuevaDescripcionController.text.isEmpty) {
@@ -87,20 +207,16 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
       return;
     }
 
-    // Validar y convertir valores a los tipos correctos
-    int capacidad = int.tryParse(nuevaCapacidadController.text) ?? 0;
     double precioNoche = double.tryParse(nuevoPrecioController.text) ?? 0.0;
     double prepagoNoche = double.tryParse(nuevoPrepagoController.text) ?? 0.0;
 
-    // Validaciones
-    if (capacidad <= 0 || precioNoche < 0 || prepagoNoche < 0) {
+    if (precioNoche < 0 || prepagoNoche < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, ingrese valores válidos')),
       );
       return;
     }
 
-    // Convertir el enum a String para enviarlo
     String tipoString = nuevoTipo == TipoHabitacion.privada ? 'privada' : 'compartida';
 
     try {
@@ -108,12 +224,13 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
         Uri.parse('http://localhost/modificar_habitacion.php'),
         body: {
           'numero': numeroController.text,
-          'tipo': tipoString, // Enviamos el tipo como String
-          'capacidad': capacidad.toString(), // Convertimos a String
-          'precio_noche': precioNoche.toString(), // Convertimos a String
-          'prepago_noche': prepagoNoche.toString(), // Convertimos a String
+          'tipo': tipoString,
+          'capacidad': nuevaCapacidad.toString(),
+          'precio_noche': precioNoche.toString(),
+          'prepago_noche': prepagoNoche.toString(),
           'descripcion': nuevaDescripcionController.text,
           'disponible': nuevaDisponibilidad == 'Sí' ? '1' : '0',
+          'imagen': imagenController.text, // Agregar el campo de imagen
         },
       );
 
@@ -121,6 +238,7 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Habitación modificada exitosamente')),
         );
+        Navigator.pop(context); // Volver a la lista de habitaciones
       } else {
         print('Error al modificar la habitación: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,114 +257,21 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Modificar Habitación'),
+        title: Text('Lista de Habitaciones'),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                children: [
-                  TextField(
-                    controller: numeroController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Número de habitación',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => obtenerDetallesHabitacion(),
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: obtenerDetallesHabitacion,
-                    child: Text('Cargar detalles de la habitación'),
-                  ),
-                  SizedBox(height: 16),
-                  DropdownButtonFormField<TipoHabitacion>(
-                    decoration: InputDecoration(
-                      labelText: 'Tipo de habitación',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: nuevoTipo,
-                    items: TipoHabitacion.values.map((TipoHabitacion tipo) {
-                      return DropdownMenuItem<TipoHabitacion>(
-                        value: tipo,
-                        child: Text(tipo.toString().split('.').last), // Muestra el nombre del enum
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        nuevoTipo = newValue!; // Actualizamos el tipo seleccionado
-                      });
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: nuevaCapacidadController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Capacidad (número de personas)',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: nuevoPrecioController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Precio por noche',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: nuevoPrepagoController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Prepago por noche',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: nuevaDescripcionController,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: 'Descripción',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Disponibilidad',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: nuevaDisponibilidad,
-                    items: ['Sí', 'No'].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        nuevaDisponibilidad = newValue!;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: modificarHabitacion,
-                    child: Text('Modificar Habitación'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      textStyle: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ],
-              ),
+          : ListView.builder(
+              itemCount: habitaciones.length,
+              itemBuilder: (context, index) {
+                final habitacion = habitaciones[index];
+                return ListTile(
+                  title: Text('Habitación ${habitacion['numero']}'),
+                  subtitle: Text('Tipo: ${habitacion['tipo']}'),
+                  trailing: Icon(Icons.edit),
+                  onTap: () => abrirFormularioModificar(habitacion),
+                );
+              },
             ),
     );
   }

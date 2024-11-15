@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'gestionar_habitacion.dart';
-<<<<<<< HEAD
 import 'seleccionar_fechas.dart'; // Importamos la nueva pantalla
-=======
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
 
 void main() {
   runApp(MyApp());
@@ -14,10 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hostal La Curva',
-<<<<<<< HEAD
-       debugShowCheckedModeBanner: false,
-=======
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -31,7 +25,6 @@ class BienvenidaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-<<<<<<< HEAD
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -52,50 +45,29 @@ class BienvenidaScreen extends StatelessWidget {
             ),
           ],
         ),
-=======
-        title: Text('Hostal La Curva'),
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-<<<<<<< HEAD
               'Bienvenido a La Curva Apartamentos',
-=======
-              '¡Bienvenido a mi app!',
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-<<<<<<< HEAD
                 // Navegar a la pantalla de seleccionar fechas
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SeleccionarFechasScreen()),
                 );
               },
-              child: Text('Reservar ahora'),
-=======
-                // Navegar a la pantalla de gestionar habitaciones
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GestionarHabitacionesScreen()),
-                );
-              },
-              child: Text('Gestionar habitaciones'),
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
+              child: Text("Seleccionar Fechas"),
             ),
           ],
         ),
       ),
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d

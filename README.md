@@ -1,4 +1,4 @@
 # la_curva
 
-v1.2
-Ahora se puede añadir, eliminar, modificar y listar habitaciones correctamente.
+v1.3
+Se puede escoger check-in y check-out correctamente, y seleccionar las habitaciones disponibles.

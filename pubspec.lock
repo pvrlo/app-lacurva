@@ -83,6 +83,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+<<<<<<< HEAD
   intl:
     dependency: "direct main"
     description:
@@ -91,6 +92,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.18.1"
+=======
+>>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
   leak_tracker:
     dependency: transitive
     description:

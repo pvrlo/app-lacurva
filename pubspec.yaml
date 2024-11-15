@@ -10,7 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.6
+<<<<<<< HEAD
   intl: ^0.18.0
+=======
+>>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d
 
 dev_dependencies:
   flutter_test:
@@ -18,8 +21,12 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 flutter:
+<<<<<<< HEAD
   assets:
     - assets/images/
   uses-material-design: true
  
   
+=======
+  uses-material-design: true
+>>>>>>> 639c5f13a27fd1e5c13a3de9f5da9a7cdcf3b36d

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 
 enum TipoHabitacion {
   privada,
@@ -17,13 +19,14 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
   bool isLoading = true;
 
   final TextEditingController numeroController = TextEditingController();
-  TipoHabitacion nuevoTipo = TipoHabitacion.privada; // Valor por defecto
-  int nuevaCapacidad = 1; // Capacidad por defecto
+  TipoHabitacion nuevoTipo = TipoHabitacion.privada; 
+  int nuevaCapacidad = 1; 
   final TextEditingController nuevoPrecioController = TextEditingController();
   final TextEditingController nuevoPrepagoController = TextEditingController();
   final TextEditingController nuevaDescripcionController = TextEditingController();
   String nuevaDisponibilidad = 'Sí';
-  final TextEditingController imagenController = TextEditingController(); // Campo de imagen
+  String? imagenUrl;
+  File? nuevaImagen;
 
   @override
   void initState() {
@@ -55,7 +58,6 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
 
   void abrirFormularioModificar(Map<String, dynamic> habitacion) {
     setState(() {
-      // Rellenar los datos del formulario con los detalles de la habitación seleccionada
       numeroController.text = habitacion['numero'].toString();
       nuevoTipo = habitacion['tipo'] == 'privada' ? TipoHabitacion.privada : TipoHabitacion.compartida;
       nuevaCapacidad = int.tryParse(habitacion['capacidad'].toString()) ?? 1;
@@ -63,10 +65,9 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
       nuevoPrepagoController.text = habitacion['prepago_noche'].toString();
       nuevaDescripcionController.text = habitacion['descripcion'] ?? '';
       nuevaDisponibilidad = habitacion['disponible'] == '1' ? 'Sí' : 'No';
-      imagenController.text = habitacion['imagen'] ?? ''; // Agregar campo de imagen
+      imagenUrl = habitacion['imagen']; 
     });
 
-    // Navegar a una nueva pantalla que contiene el formulario de modificación
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -172,13 +173,35 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
                   },
                 ),
                 SizedBox(height: 16),
-                TextField(
-                  controller: imagenController,
-                  decoration: InputDecoration(
-                    labelText: 'URL de la imagen (pendiente de funcionalidad)',
-                    border: OutlineInputBorder(),
+
+                // Mostrar la imagen actual si existe
+                if (imagenUrl != null && imagenUrl!.isNotEmpty) ...[
+                  Image.network(
+                    imagenUrl!,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: eliminarImagen,
+                    child: Text('Eliminar Imagen'),
+                  ),
+                  SizedBox(height: 16),
+                ],
+
+                ElevatedButton(
+                  onPressed: seleccionarImagen,
+                  child: Text('Seleccionar Nueva Imagen'),
                 ),
+                if (nuevaImagen != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Image.file(
+                      nuevaImagen!,
+                      height: 200,
+                    ),
+                  ),
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: modificarHabitacion,
@@ -196,6 +219,48 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
     );
   }
 
+  Future<void> seleccionarImagen() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        nuevaImagen = File(pickedFile.path);
+      });
+    }
+  }
+
+Future<void> eliminarImagen() async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost/eliminar_imagen.php'), 
+      body: {
+        'imagen_url': imagenUrl ?? '', // Enviar la URL de la imagen actual
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        imagenUrl = null; // Eliminar la imagen de la vista local
+      });
+
+      // Llamar nuevamente a la función para recargar la lista de habitaciones
+      await obtenerListaHabitaciones(); 
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Imagen eliminada exitosamente')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al eliminar la imagen')),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ocurrió un error al eliminar la imagen: $e')),
+    );
+  }
+}
   Future<void> modificarHabitacion() async {
     if (numeroController.text.isEmpty ||
         nuevoPrecioController.text.isEmpty ||
@@ -220,6 +285,12 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
     String tipoString = nuevoTipo == TipoHabitacion.privada ? 'privada' : 'compartida';
 
     try {
+      // Lógica para manejar la nueva imagen
+      String? nuevaImagenUrl;
+      if (nuevaImagen != null) {
+        nuevaImagenUrl = await subirImagen(nuevaImagen!);
+      }
+
       final response = await http.post(
         Uri.parse('http://localhost/modificar_habitacion.php'),
         body: {
@@ -230,7 +301,7 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
           'prepago_noche': prepagoNoche.toString(),
           'descripcion': nuevaDescripcionController.text,
           'disponible': nuevaDisponibilidad == 'Sí' ? '1' : '0',
-          'imagen': imagenController.text, // Agregar el campo de imagen
+          'imagen': nuevaImagenUrl ?? imagenUrl ?? '', // Enviar nueva imagen o URL previa
         },
       );
 
@@ -250,6 +321,27 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ocurrió un error: $e')),
       );
+    }
+  }
+
+  // Función para subir la imagen al servidor
+  Future<String?> subirImagen(File imagen) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('http://localhost/subir_imagen.php'));
+      request.files.add(await http.MultipartFile.fromPath('imagen', imagen.path));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseString = await response.stream.bytesToString();
+        var responseData = jsonDecode(responseString);
+        return responseData['imageUrl']; // La URL de la imagen subida
+      } else {
+        print('Error al subir la imagen: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error al subir la imagen: $e');
+      return null;
     }
   }
 

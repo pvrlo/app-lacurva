@@ -19,7 +19,7 @@ class _ListaHabitacionesScreenState extends State<ListaHabitacionesScreen> {
 
   Future<void> obtenerHabitaciones() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/lista_habitacion.php')); // Reemplaza con la URL de tu servidor
+      final response = await http.get(Uri.parse('http://localhost/lista_habitacion.php')); 
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
@@ -56,23 +56,53 @@ class _ListaHabitacionesScreenState extends State<ListaHabitacionesScreen> {
                     final habitacion = habitaciones[index];
                     return Card(
                       margin: EdgeInsets.all(8.0),
-                      child: ListTile(
-                        title: Text('Habitación ${habitacion['numero']}'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Tipo: ${habitacion['tipo']}'),
-                            Text('Capacidad: ${habitacion['capacidad']} personas'),
-                            Text('Precio por noche: \$${habitacion['precio_noche']}'),
-                            Text('Prepago por noche: \$${habitacion['prepago_noche']}'),
-                            Text('Descripción: ${habitacion['descripcion']}'),
-                            Text('Disponible: ${habitacion['disponible'] == '1' ? 'Sí' : 'No'}'),
-                          ],
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          habitacion['imagen'] != null && habitacion['imagen'].isNotEmpty
+                              ? _buildImage(habitacion['imagen'])
+                              : Container(
+                                  height: 200,
+                                  color: Colors.grey[300], 
+                                  child: Center(child: Text('Sin imagen')),
+                                ),
+                          ListTile(
+                            title: Text('Habitación ${habitacion['numero']}'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Tipo: ${habitacion['tipo']}'),
+                                Text('Capacidad: ${habitacion['capacidad']} personas'),
+                                Text('Precio por noche: \$${habitacion['precio_noche']}'),
+                                Text('Prepago por noche: \$${habitacion['prepago_noche']}'),
+                                Text('Descripción: ${habitacion['descripcion']}'),
+                                Text('Disponible: ${habitacion['disponible'] == '1' ? 'Sí' : 'No'}'),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
                 ),
+    );
+  }
+
+  // Función para decodificar y mostrar la imagen base64 (CORREGIDA)
+  Widget _buildImage(String imageData) {
+    var imageString = imageData.contains(',') ? imageData.split(',')[1] : imageData;
+
+    // Agregar relleno SOLO si la longitud no es múltiplo de 4
+    if (imageString.length % 4 != 0) {
+      final padding = '=' * (4 - (imageString.length % 4));
+      imageString += padding; 
+    }
+
+    return Image.memory(
+      base64Decode(imageString),
+      height: 200, 
+      width: double.infinity,
+      fit: BoxFit.cover, 
     );
   }
 }

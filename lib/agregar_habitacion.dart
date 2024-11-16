@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'dart:io';
+
+import 'dart:typed_data';
+import 'package:http_parser/http_parser.dart';
 
 class AgregarHabitacionScreen extends StatefulWidget {
   @override
@@ -14,22 +19,52 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
   String tipoSeleccionado = 'Privada';
   int capacidadSeleccionada = 1;
   String disponibilidadSeleccionada = 'Sí';
+  File? imagenSeleccionada;
+  Uint8List? imagenBytes;
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _seleccionarImagen() async {
+    final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
+    if (imagen != null) {
+      final bytes = await imagen.readAsBytes();
+
+      setState(() {
+        imagenSeleccionada = File(imagen.path);
+        imagenBytes = bytes;
+      });
+    }
+  }
 
   Future<void> agregarHabitacion(BuildContext context) async {
     try {
-      final response = await http.post(
-        Uri.parse('http://localhost/agregar_habitacion.php'), // Reemplaza con la IP de tu máquina.
-        body: {
-          'numero': numeroController.text,
-          'tipo': tipoSeleccionado.toLowerCase(),
-          'capacidad': capacidadSeleccionada.toString(),
-          'precio_noche': precioNocheController.text,
-          'prepago_noche': prepagoNocheController.text,
-          'descripcion': descripcionController.text,
-          'imagen': '', // Placeholder, añade lógica de subida si es necesario
-          'disponible': disponibilidadSeleccionada == 'Sí' ? '1' : '0',
-        },
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://localhost/agregar_habitacion.php'),
       );
+
+      request.fields['numero'] = numeroController.text;
+      request.fields['tipo'] = tipoSeleccionado.toLowerCase();
+      request.fields['capacidad'] = capacidadSeleccionada.toString();
+      request.fields['precio_noche'] = precioNocheController.text;
+      request.fields['prepago_noche'] = prepagoNocheController.text;
+      request.fields['descripcion'] = descripcionController.text;
+      request.fields['disponible'] = disponibilidadSeleccionada == 'Sí' ? '1' : '0';
+
+      // Si hay una imagen seleccionada, agregarla al request
+      if (imagenSeleccionada != null && imagenBytes != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'imagen', // Nombre del campo de la imagen que el backend espera
+            imagenBytes!,
+            filename: imagenSeleccionada!.path.split('/').last, // Nombre de la imagen
+            contentType: MediaType('image', 'jpeg'), // Tipo de contenido
+          ),
+        );
+      }
+
+      // Enviar la solicitud
+      final response = await request.send();
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,7 +93,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            // Campo que solo admite números (número de habitación, por ejemplo)
             TextField(
               controller: numeroController,
               keyboardType: TextInputType.number,
@@ -68,8 +102,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               ),
             ),
             SizedBox(height: 16),
-
-            // Campo desplegable para tipo de habitación (privada/compartida)
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Tipo de habitación',
@@ -89,8 +121,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               },
             ),
             SizedBox(height: 16),
-
-            // Campo desplegable de capacidad (1 a 4)
             DropdownButtonFormField<int>(
               decoration: InputDecoration(
                 labelText: 'Capacidad',
@@ -110,8 +140,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               },
             ),
             SizedBox(height: 16),
-
-            // Campo que solo admite números para el precio por noche
             TextField(
               controller: precioNocheController,
               keyboardType: TextInputType.number,
@@ -121,8 +149,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               ),
             ),
             SizedBox(height: 16),
-
-            // Campo que solo admite números para el prepago por noche
             TextField(
               controller: prepagoNocheController,
               keyboardType: TextInputType.number,
@@ -132,8 +158,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               ),
             ),
             SizedBox(height: 16),
-
-            // Campo de texto para la descripción
             TextField(
               controller: descripcionController,
               keyboardType: TextInputType.multiline,
@@ -144,17 +168,18 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               ),
             ),
             SizedBox(height: 16),
-
-            // Campo para subir la imagen (solo un botón por ahora)
+            // Mostrar la imagen seleccionada (si existe)
+            if (imagenBytes != null)
+              Image.memory(
+                imagenBytes!, // Usamos Image.memory para Flutter Web
+                height: 150,
+              ),
+            SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                // Lógica para subir la imagen (placeholder)
-              },
+              onPressed: _seleccionarImagen,
               child: Text('Subir imagen'),
             ),
             SizedBox(height: 16),
-
-            // Campo desplegable para disponibilidad (sí/no)
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Disponible',
@@ -174,8 +199,6 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
               },
             ),
             SizedBox(height: 24),
-
-            // Botón para agregar la habitación
             ElevatedButton(
               onPressed: () {
                 agregarHabitacion(context);

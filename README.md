@@ -1,4 +1,4 @@
 # la_curva
 
 v1.3
-Se puede escoger check-in y check-out correctamente, y seleccionar las habitaciones disponibles.
+Se puede agregar imagenes, se listan, y se reflejan en la selección de habitaciones (falta poder modificarlas y eliminarlas)

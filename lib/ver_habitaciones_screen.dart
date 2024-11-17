@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../services/habitacion_service.dart';
 import '../models/habitacion.dart';
+import 'detalle_habitacion.dart'; // Nueva pantalla para mostrar más detalles
 
 class VerHabitacionesScreen extends StatelessWidget {
   final HabitacionService habitacionService = HabitacionService();
@@ -10,7 +11,7 @@ class VerHabitacionesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Habitaciones Disponibles'),
+        title: Text('Habitaciones disponibles'),
       ),
       body: FutureBuilder<List<Habitacion>>(
         future: habitacionService.fetchHabitaciones(),
@@ -34,23 +35,13 @@ class VerHabitacionesScreen extends StatelessWidget {
                     leading: Image.network(habitacion.imagen),
                     title: Text('Habitación ${habitacion.numero}'),
                     subtitle: Text('Tipo: ${habitacion.tipo}\nCapacidad: ${habitacion.capacidad}\nPrecio por noche: \$${habitacion.precioNoche}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.check),
+                    trailing: ElevatedButton(
+                      child: Text('Ver detalles'),
                       onPressed: () {
-                        // Lógica para seleccionar la habitación
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Seleccionaste la habitación ${habitacion.numero}'),
-                            content: Text('Tipo: ${habitacion.tipo}\nPrecio: \$${habitacion.precioNoche}'),
-                            actions: [
-                              TextButton(
-                                child: Text('Cerrar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
+                        // Navegar a la pantalla de detalles con más información de la habitación
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => DetalleHabitacionScreen(habitacion: habitacion),
                           ),
                         );
                       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'gestionar_habitacion.dart';
-import 'seleccionar_fechas.dart'; // Importamos la nueva pantalla
+
+import 'seleccionar_fechas.dart';
+import 'login.dart'; // Importamos la pantalla de inicio de sesión
 
 void main() {
   runApp(MyApp());
@@ -31,15 +32,15 @@ class BienvenidaScreen extends StatelessWidget {
             Text('La Curva Apartamentos'),
             GestureDetector(
               onTap: () {
-                // Navegar a la pantalla de gestionar habitaciones
+                // Navegar a la pantalla de inicio de sesión
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => GestionarHabitacionesScreen()),
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
               child: Image.asset(
-                'images/person.png', // Reemplaza 'ruta_a_tu_imagen' con la ruta de tu imagen
-                height: 30, // Tamaño pequeño para la imagen
+                'images/person.png', // Reemplaza 'images/person.png' con la ruta de tu imagen
+                height: 30,
                 width: 30,
               ),
             ),

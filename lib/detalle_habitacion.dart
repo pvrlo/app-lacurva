@@ -6,8 +6,17 @@ import 'reserva_habitacion.dart';
 
 class DetalleHabitacionScreen extends StatelessWidget {
   final Habitacion habitacion;
+  final DateTime checkInDate;
+  final DateTime checkOutDate;
+  
 
-  DetalleHabitacionScreen({required this.habitacion});
+ DetalleHabitacionScreen({
+    required this.habitacion,
+    required this.checkInDate,  // Asegúrate de que sea requerido
+    required this.checkOutDate,  // Asegúrate de que sea requerido
+  });
+
+  
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
+// seleccionar_fechas_screen.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Importa el paquete intl
-import 'ver_habitaciones_screen.dart'; // Importa la pantalla donde quieres redirigir
+import 'package:intl/intl.dart';
+import 'ver_habitaciones_screen.dart';
 
 class SeleccionarFechasScreen extends StatefulWidget {
   @override
@@ -12,30 +13,29 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
 
-  // Función para formatear la fecha a un formato legible
   String _formatDate(DateTime? date) {
-    if (date == null) return 'No seleccionada'; // Si no hay fecha seleccionada, mostrar "No seleccionada"
-    return DateFormat('dd/MM/yyyy').format(date); // Formato dd/MM/yyyy
+    if (date == null) return 'No seleccionada';
+    return DateFormat('dd/MM/yyyy').format(date);
   }
 
-  // Función para seleccionar la fecha de check-in
   Future<void> _selectCheckInDate(BuildContext context) async {
     final DateTime now = DateTime.now();
     final DateTime selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _checkInDate ?? now, // Si no hay fecha seleccionada, tomar la fecha actual
-      firstDate: now, // No permitir fechas anteriores al día actual
-      lastDate: DateTime(now.year + 1), // Permitir solo un año hacia el futuro
-    ) ?? now;
+          context: context,
+          initialDate: _checkInDate ?? now,
+          firstDate: now,
+          lastDate: DateTime(now.year + 1),
+        ) ??
+        now;
 
     if (_checkOutDate != null && selectedDate.isAfter(_checkOutDate!)) {
-      // Si la fecha de check-in es posterior a la de check-out, mostrar un mensaje
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Text('Error'),
-            content: Text('La fecha de check-in no puede ser posterior a la de check-out.'),
+            content: Text(
+                'La fecha de check-in no puede ser posterior a la de check-out.'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -54,10 +54,8 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
     }
   }
 
-  // Función para seleccionar la fecha de check-out
   Future<void> _selectCheckOutDate(BuildContext context) async {
     if (_checkInDate == null) {
-      // Si no se ha seleccionado fecha de check-in, mostrar un mensaje
       showDialog(
         context: context,
         builder: (context) {
@@ -79,11 +77,12 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
     }
 
     final DateTime selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _checkOutDate ?? _checkInDate!,
-      firstDate: _checkInDate!,
-      lastDate: DateTime(_checkInDate!.year + 1),
-    ) ?? _checkInDate!;
+          context: context,
+          initialDate: _checkOutDate ?? _checkInDate!,
+          firstDate: _checkInDate!,
+          lastDate: DateTime(_checkInDate!.year + 1),
+        ) ??
+        _checkInDate!;
 
     setState(() {
       _checkOutDate = selectedDate;
@@ -109,25 +108,32 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
             ElevatedButton(
               onPressed: () => _selectCheckInDate(context),
               child: Text(
-                'Check-In: ${_formatDate(_checkInDate)}', // Muestra la fecha de check-in formateada
+                'Check-In: ${_formatDate(_checkInDate)}',
               ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _selectCheckOutDate(context),
               child: Text(
-                'Check-Out: ${_formatDate(_checkOutDate)}', // Muestra la fecha de check-out formateada
+                'Check-Out: ${_formatDate(_checkOutDate)}',
               ),
             ),
             SizedBox(height: 40),
             ElevatedButton(
-              onPressed: (_checkInDate != null && _checkOutDate != null) ? () {
-                // Si ambas fechas están seleccionadas, navega a la pantalla de habitaciones
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => VerHabitacionesScreen()), // Navegar a la pantalla VerHabitacionesScreen
-                );
-              } : null, // El botón estará deshabilitado si no se seleccionaron ambas fechas
+              onPressed: (_checkInDate != null && _checkOutDate != null)
+                  ? () {
+                      // Navega a VerHabitacionesScreen y pasa las fechas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VerHabitacionesScreen(
+                            checkInDate: _checkInDate!, // Pasa la fecha como no nula
+                            checkOutDate: _checkOutDate!, // Pasa la fecha como no nula
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
               child: Text('Ver habitaciones disponibles'),
             ),
           ],

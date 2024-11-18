@@ -1,11 +1,17 @@
-// lib/screens/ver_habitaciones_screen.dart
 import 'package:flutter/material.dart';
 import '../services/habitacion_service.dart';
 import '../models/habitacion.dart';
-import 'detalle_habitacion.dart'; // Nueva pantalla para mostrar más detalles
+import 'detalle_habitacion.dart';
 
 class VerHabitacionesScreen extends StatelessWidget {
   final HabitacionService habitacionService = HabitacionService();
+  final DateTime checkInDate; // No es nullable
+  final DateTime checkOutDate; // No es nullable
+
+ VerHabitacionesScreen({
+    required this.checkInDate,
+    required this.checkOutDate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +40,19 @@ class VerHabitacionesScreen extends StatelessWidget {
                   child: ListTile(
                     leading: Image.network(habitacion.imagen),
                     title: Text('Habitación ${habitacion.numero}'),
-                    subtitle: Text('Tipo: ${habitacion.tipo}\nCapacidad: ${habitacion.capacidad}\nPrecio por noche: \$${habitacion.precioNoche}'),
+                    subtitle: Text(
+                        'Tipo: ${habitacion.tipo}\nCapacidad: ${habitacion.capacidad}\nPrecio por noche: \$${habitacion.precioNoche}'),
                     trailing: ElevatedButton(
                       child: Text('Ver detalles'),
                       onPressed: () {
-                        // Navegar a la pantalla de detalles con más información de la habitación
+                        // Navega a DetalleHabitacionScreen y pasa las fechas
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => DetalleHabitacionScreen(habitacion: habitacion),
+                            builder: (context) => DetalleHabitacionScreen(
+                              habitacion: habitacion,
+                              checkInDate: checkInDate,
+                              checkOutDate: checkOutDate,
+                            ),
                           ),
                         );
                       },

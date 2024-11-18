@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:la_curva/pago_completado.dart';
 import 'seleccionar_fechas.dart';
 import 'login.dart'; // Importamos la pantalla de inicio de sesión
 
@@ -17,6 +17,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: BienvenidaScreen(),
+      routes: {
+        '/pago_completado': (context) => PagoCompletadoScreen(), // Ruta para pago completado
+      },
     );
   }
 }

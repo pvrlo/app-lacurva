@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';  // Importa dart:convert para jsonDecode
 import 'dart:io';
-
 import 'dart:typed_data';
 import 'package:http_parser/http_parser.dart';
 
@@ -40,9 +40,19 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://localhost/agregar_habitacion.php'),
+        Uri.parse('http://localhost/agregar_habitacion.php'), // Cambia a 10.0.2.2 si usas un emulador de Android
       );
 
+      // Imprimir los datos para verificar que se están enviando correctamente
+      print('Datos enviados:');
+      print('Número: ${numeroController.text}');
+      print('Tipo: $tipoSeleccionado');
+      print('Capacidad: $capacidadSeleccionada');
+      print('Precio por noche: ${precioNocheController.text}');
+      print('Prepago por noche: ${prepagoNocheController.text}');
+      print('Descripción: ${descripcionController.text}');
+      print('Disponible: $disponibilidadSeleccionada');
+      
       request.fields['numero'] = numeroController.text;
       request.fields['tipo'] = tipoSeleccionado.toLowerCase();
       request.fields['capacidad'] = capacidadSeleccionada.toString();
@@ -66,9 +76,14 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
       // Enviar la solicitud
       final response = await request.send();
 
+      // Leer la respuesta
+      final responseBody = await response.stream.bytesToString();
+      print('Respuesta del servidor: $responseBody');
+
       if (response.statusCode == 200) {
+        final responseJson = jsonDecode(responseBody); // Aquí se utiliza jsonDecode
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Habitación agregada exitosamente')),
+          SnackBar(content: Text(responseJson['message'])),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

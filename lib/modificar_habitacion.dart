@@ -36,7 +36,7 @@ class _ModificarHabitacionScreenState extends State<ModificarHabitacionScreen> {
 
   Future<void> obtenerListaHabitaciones() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/lista_habitacion.php'));
+      final response = await http.get(Uri.parse('http://localhost/la_curva/lista_habitacion.php'));
 
       if (response.statusCode == 200) {
         setState(() {

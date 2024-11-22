@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // URL de tu API de autenticación
-      var url = Uri.parse('http://localhost/authenticate.php');
+      var url = Uri.parse('http://localhost/la_curva/authenticate.php');
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

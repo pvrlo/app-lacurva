@@ -1,4 +1,3 @@
-// lib/screens/detalle_habitacion_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../models/habitacion.dart';
@@ -8,15 +7,12 @@ class DetalleHabitacionScreen extends StatelessWidget {
   final Habitacion habitacion;
   final DateTime checkInDate;
   final DateTime checkOutDate;
-  
 
- DetalleHabitacionScreen({
+  DetalleHabitacionScreen({
     required this.habitacion,
-    required this.checkInDate,  // Asegúrate de que sea requerido
-    required this.checkOutDate,  // Asegúrate de que sea requerido
+    required this.checkInDate,
+    required this.checkOutDate,
   });
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +43,6 @@ class DetalleHabitacionScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Información de la habitación
                       Text(
                         'Habitación ${habitacion.numero}',
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -77,7 +72,6 @@ class DetalleHabitacionScreen extends StatelessWidget {
             // Botón para reservar la habitación
             ElevatedButton(
               onPressed: () {
-                // Navegar a la pantalla de reserva con el número de habitación y el precio
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ReservaHabitacionScreen(
                     habitacionNumero: habitacion.numero.toString(),
@@ -93,21 +87,50 @@ class DetalleHabitacionScreen extends StatelessWidget {
     );
   }
 
-  // Función para decodificar y mostrar la imagen base64 (si es necesario)
+  // Función para decodificar y mostrar la imagen
   Widget _buildImage(String imageData) {
-    var imageString = imageData.contains(',') ? imageData.split(',')[1] : imageData;
-
-    // Agregar relleno SOLO si la longitud no es múltiplo de 4
-    if (imageString.length % 4 != 0) {
-      final padding = '=' * (4 - (imageString.length % 4));
-      imageString += padding;
+    // Comprobar si la imagen es una URL
+    if (imageData.startsWith('http') || imageData.startsWith('https')) {
+      return Image.network(
+        imageData,
+        height: 150,
+        width: 150,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 150,
+            width: 150,
+            color: Colors.grey[300],
+            child: Center(child: Text('Error al cargar imagen')),
+          );
+        },
+      );
     }
 
-    return Image.memory(
-      base64Decode(imageString),
-      height: 150, // Tamaño adecuado para la imagen
-      width: 150, // Tamaño adecuado para la imagen
-      fit: BoxFit.cover,
-    );
+    // Manejar Base64
+    try {
+      String imageString = imageData.contains(',') ? imageData.split(',')[1] : imageData;
+
+      // Agregar relleno SOLO si la longitud no es múltiplo de 4
+      if (imageString.length % 4 != 0) {
+        final padding = '=' * (4 - (imageString.length % 4));
+        imageString += padding;
+      }
+
+      return Image.memory(
+        base64Decode(imageString),
+        height: 150,
+        width: 150,
+        fit: BoxFit.cover,
+      );
+    } catch (e) {
+      // Si ocurre un error, mostrar contenedor de error
+      return Container(
+        height: 150,
+        width: 150,
+        color: Colors.grey[300],
+        child: Center(child: Text('Imagen inválida')),
+      );
+    }
   }
 }

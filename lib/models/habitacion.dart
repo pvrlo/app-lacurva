@@ -22,17 +22,21 @@ class Habitacion {
     required this.disponible,
   });
 
-  factory Habitacion.fromJson(Map<String, dynamic> json) {
-    return Habitacion(
-      id: int.tryParse(json['id'].toString()) ?? 0,  // Asegura que el id sea un int
-      numero: json['numero'].toString(),            // Convierte a String si es necesario
-      tipo: json['tipo'].toString(),                // Convierte a String si es necesario
-      capacidad: int.tryParse(json['capacidad'].toString()) ?? 0,  // Convierte a int
-      precioNoche: double.tryParse(json['precio_noche'].toString()) ?? 0.0,  // Convierte a double
-      prepagoNoche: double.tryParse(json['prepago_noche'].toString()) ?? 0.0,  // Convierte a double
-      descripcion: json['descripcion'].toString(),  // Convierte a String si es necesario
-      imagen: json['imagen'].toString(),            // Convierte a String si es necesario
-      disponible: json['disponible'] == 1,          // Se mantiene la comparación con 1
-    );
-  }
+factory Habitacion.fromJson(Map<String, dynamic> json) {
+  final baseUrl = 'http://localhost/uploads/'; // Cambia esto a tu URL base
+
+  return Habitacion(
+    id: int.tryParse(json['id'].toString()) ?? 0, // Asegura que el id sea un int
+    numero: json['numero'].toString(),            // Convierte a String si es necesario
+    tipo: json['tipo'].toString(),                // Convierte a String si es necesario
+    capacidad: int.tryParse(json['capacidad'].toString()) ?? 0,  // Convierte a int
+    precioNoche: double.tryParse(json['precio_noche'].toString()) ?? 0.0,  // Convierte a double
+    prepagoNoche: double.tryParse(json['prepago_noche'].toString()) ?? 0.0,  // Convierte a double
+    descripcion: json['descripcion'].toString(),  // Convierte a String si es necesario
+    imagen: json['imagen'] != null && json['imagen'].isNotEmpty 
+        ? baseUrl + json['imagen'] // Combina la URL base con el nombre de archivo
+        : '${baseUrl}default_image.jpg', // Imagen predeterminada si no hay imagen
+    disponible: json['disponible'] == 1,          // Se mantiene la comparación con 1
+  );
+}
 }

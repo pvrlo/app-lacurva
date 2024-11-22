@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';  // Importa dart:convert para jsonDecode
+import 'package:mime/mime.dart'; // Para detectar el tipo MIME
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:http_parser/http_parser.dart';
@@ -40,7 +41,7 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://localhost/agregar_habitacion.php'), // Cambia a 10.0.2.2 si usas un emulador de Android
+        Uri.parse('http://localhost/la_curva/agregar_habitacion.php'), // Cambia a 10.0.2.2 si usas un emulador de Android
       );
 
       // Imprimir los datos para verificar que se están enviando correctamente
@@ -52,7 +53,7 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
       print('Prepago por noche: ${prepagoNocheController.text}');
       print('Descripción: ${descripcionController.text}');
       print('Disponible: $disponibilidadSeleccionada');
-      
+
       request.fields['numero'] = numeroController.text;
       request.fields['tipo'] = tipoSeleccionado.toLowerCase();
       request.fields['capacidad'] = capacidadSeleccionada.toString();
@@ -63,14 +64,21 @@ class _AgregarHabitacionScreenState extends State<AgregarHabitacionScreen> {
 
       // Si hay una imagen seleccionada, agregarla al request
       if (imagenSeleccionada != null && imagenBytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'imagen', // Nombre del campo de la imagen que el backend espera
-            imagenBytes!,
-            filename: imagenSeleccionada!.path.split('/').last, // Nombre de la imagen
-            contentType: MediaType('image', 'jpeg'), // Tipo de contenido
-          ),
-        );
+       // Detectar el tipo MIME correcto según el archivo
+
+
+request.files.add(
+  http.MultipartFile.fromBytes(
+    'imagen', 
+    imagenBytes!,
+    filename: 'imagen_${DateTime.now().millisecondsSinceEpoch}.jpeg', // Forzar extensión válida
+    contentType: MediaType('image', 'jpeg'),
+  ),
+);
+
+print('Ruta de imagen seleccionada: ${imagenSeleccionada!.path}');
+print('Tipo MIME detectado: ${lookupMimeType(imagenSeleccionada!.path, headerBytes: imagenBytes)}');
+
       }
 
       // Enviar la solicitud

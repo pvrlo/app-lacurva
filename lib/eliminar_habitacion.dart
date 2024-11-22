@@ -18,7 +18,7 @@ class _EliminarHabitacionScreenState extends State<EliminarHabitacionScreen> {
     }
 
     final response = await http.post(
-      Uri.parse('http://localhost/eliminar_habitacion.php'), // Reemplaza con la URL de tu servidor
+      Uri.parse('http://localhost/la_curva/eliminar_habitacion.php'), // Reemplaza con la URL de tu servidor
       body: {
         'numero': numeroController.text,
       },

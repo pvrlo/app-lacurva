@@ -123,7 +123,7 @@ class _ReservaHabitacionScreenState extends State<ReservaHabitacionScreen> {
   }
 
   Future<void> _createReservation(String paymentId) async {
-    final url = Uri.parse('https://localhost/crear_reserva.php'); // URL de tu archivo PHP
+    final url = Uri.parse('https://localhost/la_curva/crear_reserva.php'); // URL de tu archivo PHP
 
     final response = await http.post(url, body: {
       'usuario': nombre, // Enviar el nombre como 'usuario'

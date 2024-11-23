@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math'; // Para generar un código aleatorio
 
 class ReservaHabitacionScreen extends StatefulWidget {
   final String habitacionNumero;
@@ -122,29 +123,63 @@ class _ReservaHabitacionScreenState extends State<ReservaHabitacionScreen> {
     }
   }
 
-  Future<void> _createReservation(String paymentId) async {
-    final url = Uri.parse('https://localhost/la_curva/crear_reserva.php'); // URL de tu archivo PHP
+Future<void> _createReservation(String paymentId) async {
+  final url = Uri.parse('http://localhost/la_curva/crear_reserva.php'); // URL de tu archivo PHP
 
-    final response = await http.post(url, body: {
-      'usuario': nombre, // Enviar el nombre como 'usuario'
-      'dni': dni,
-      'correo': correo,
-      'telefono': telefono,
-      'habitacion': widget.habitacionNumero,
-      'check_in': checkInDate!.toIso8601String(),
-      'check_out': checkOutDate!.toIso8601String(),
-      'adultos': adultos.toString(),
-      'ninos': ninos.toString(),
-      'precio_total': getPrecioTotal().toStringAsFixed(2),
-      'payment_id': paymentId,
-    });
+  // Generar un código aleatorio para la reserva
+  String codigoAleatorio = Random().nextInt(1000000).toString();
+
+  // Valores a enviar al backend
+  final data = {
+    'usuario': '1',
+    'dni': dni,
+    'email': correo,
+    'habitacion': widget.habitacionNumero,
+    'fecha_entrada': checkInDate!.toIso8601String().split('T')[0],
+    'fecha_salida': checkOutDate!.toIso8601String().split('T')[0],
+    'num_adultos': adultos.toString(),
+    'num_ninos': ninos.toString(),
+    'estado': 'pendiente',
+    'precio_habitacion': widget.precioPorNoche.toStringAsFixed(2),
+    'precio_total': getPrecioTotal().toStringAsFixed(2),
+    'codigo': codigoAleatorio,
+    'nombre': nombre,
+  };
+
+  // Convertir datos a JSON
+  final jsonData = json.encode(data);
+
+  // Imprimir datos JSON en la consola
+  print("JSON enviado al backend:");
+  print(jsonData);
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json', // Indicar que el contenido es JSON
+        'Accept': 'application/json', // Aceptar respuesta en JSON
+      },
+      body: jsonData, // Enviar los datos en formato JSON
+    );
 
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reserva creada con éxito')));
+      final jsonResponse = json.decode(response.body);
+      if (jsonResponse['status'] == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reserva creada con éxito')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(jsonResponse['message'])));
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al crear la reserva')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al crear la reserva: ${response.statusCode}')));
+      print('Error al crear la reserva: ${response.body}');
     }
+  } catch (e) {
+    print('Excepción al crear la reserva: $e');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción al crear la reserva')));
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -245,31 +280,39 @@ class _ReservaHabitacionScreenState extends State<ReservaHabitacionScreen> {
 
                 // Campos para cantidad de adultos y niños
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Cantidad de Adultos'),
-                  keyboardType: TextInputType.number,
-                  initialValue: adultos.toString(),
-                  validator: (value) {
-                    if (value == null || int.tryParse(value) == null || int.parse(value) <= 0) {
-                      return 'Por favor ingresa un número válido de adultos';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) => setState(() => adultos = int.parse(value)),
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Cantidad de Niños'),
-                  keyboardType: TextInputType.number,
-                  initialValue: ninos.toString(),
-                  validator: (value) {
-                    if (value == null || int.tryParse(value) == null || int.parse(value) < 0) {
-                      return 'Por favor ingresa un número válido de niños';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) => setState(() => ninos = int.parse(value)),
-                ),
-                SizedBox(height: 16),
+  decoration: InputDecoration(labelText: 'Cantidad de Adultos'),
+  keyboardType: TextInputType.number,
+  initialValue: adultos.toString(),
+  validator: (value) {
+    if (value == null || value.isEmpty || int.tryParse(value) == null || int.parse(value) <= 0) {
+      return 'Por favor ingresa un número válido de adultos';
+    }
+    return null;
+  },
+  onChanged: (value) {
+    setState(() {
+      adultos = int.tryParse(value) ?? 1; // Predeterminado a 1 si el valor es inválido
+    });
+  },
+),
+SizedBox(height: 16),
+TextFormField(
+  decoration: InputDecoration(labelText: 'Cantidad de Niños'),
+  keyboardType: TextInputType.number,
+  initialValue: ninos.toString(),
+  validator: (value) {
+    if (value == null || value.isEmpty || int.tryParse(value) == null || int.parse(value) < 0) {
+      return 'Por favor ingresa un número válido de niños';
+    }
+    return null;
+  },
+  onChanged: (value) {
+    setState(() {
+      ninos = int.tryParse(value) ?? 0; // Predeterminado a 0 si el valor es inválido
+    });
+  },
+),
+
 
                 // Selección de pago
                 DropdownButtonFormField<String>(
@@ -306,22 +349,32 @@ class _ReservaHabitacionScreenState extends State<ReservaHabitacionScreen> {
                 isProcessing
                     ? CircularProgressIndicator()
                     : ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            if (checkOutDate!.isBefore(checkInDate!)) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('La fecha de check-out no puede ser anterior a la de check-in')));
-                              return;
-                            }
-                            if (selectedPaymentMethod == null || selectedPaymentMethod!.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Por favor selecciona un método de pago')));
-                              return;
-                            }
-                            _formKey.currentState!.save();
-                            _createPayPalPayment();
-                          }
-                        },
-                        child: Text('Realizar pago'),
-                      ),
+  onPressed: () {
+    if (_formKey.currentState!.validate()) {
+      if (checkOutDate!.isBefore(checkInDate!)) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('La fecha de check-out no puede ser anterior a la de check-in')));
+        return;
+      }
+      if (selectedPaymentMethod == null || selectedPaymentMethod!.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Por favor selecciona un método de pago')));
+        return;
+      }
+      _formKey.currentState!.save();
+      setState(() {
+        isProcessing = true; // Mostrar indicador de carga
+      });
+      _createPayPalPayment().then((_) {
+        // Después de completar el pago, crea la reserva
+        _createReservation('id_pago_simulado'); // Reemplaza 'id_pago_simulado' con el real
+        setState(() {
+          isProcessing = false;
+        });
+      });
+    }
+  },
+  child: Text('Realizar pago'),
+),
+
               ],
             ),
           ),

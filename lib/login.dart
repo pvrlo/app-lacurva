@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'gestionar_habitacion.dart'; // Importar la pantalla de gestión de habitaciones
+import 'panel_admin.dart'; // Importar la pantalla de panel administrativo
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -39,10 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         if (jsonResponse['status'] == 'success' && jsonResponse['role'] == 'administrador') {
-          // Navegar a la pantalla de gestionar habitaciones
+          // Si el login es exitoso y es un administrador, navegar al panel de administración
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => GestionarHabitacionesScreen()),
+            MaterialPageRoute(builder: (context) => PanelAdminScreen()),
           );
         } else {
           setState(() {

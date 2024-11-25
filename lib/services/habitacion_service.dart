@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/habitacion.dart';
 
 class HabitacionService {
-  final String apiUrl = 'http://localhost/lista_habitacion.php'; // Asegúrate de que esta URL sea correcta
+  final String apiUrl = 'http://localhost/la_curva/lista_habitacion.php'; // Asegúrate de que esta URL sea correcta
 
   Future<List<Habitacion>> fetchHabitaciones() async {
     try {

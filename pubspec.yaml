@@ -19,6 +19,7 @@ dependencies:
   mime: ^1.0.4
   http_parser: ^4.0.2
   path_provider: ^2.0.15
+  syncfusion_flutter_charts: ^22.1.50
 
 dev_dependencies:
   flutter_test:

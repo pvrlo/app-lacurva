@@ -120,22 +120,22 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
             ),
             SizedBox(height: 40),
             ElevatedButton(
-              onPressed: (_checkInDate != null && _checkOutDate != null)
-                  ? () {
-                      // Navega a VerHabitacionesScreen y pasa las fechas
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VerHabitacionesScreen(
-                            checkInDate: _checkInDate!, // Pasa la fecha como no nula
-                            checkOutDate: _checkOutDate!, // Pasa la fecha como no nula
-                          ),
-                        ),
-                      );
-                    }
-                  : null,
-              child: Text('Ver habitaciones disponibles'),
+  onPressed: (_checkInDate != null && _checkOutDate != null)
+      ? () {
+          // Navega a VerHabitacionesScreen y pasa las fechas
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerHabitacionesScreen(
+                checkInDate: _checkInDate!, // Pasa la fecha como no nula
+                checkOutDate: _checkOutDate!, // Pasa la fecha como no nula
+              ),
             ),
+          );
+        }
+      : null,
+  child: Text('Ver habitaciones disponibles'),
+)
           ],
         ),
       ),

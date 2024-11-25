@@ -129,14 +129,23 @@ Future<void> _createReservation(String paymentId) async {
   // Generar un código aleatorio para la reserva
   String codigoAleatorio = Random().nextInt(1000000).toString();
 
+  // Validar que checkInDate y checkOutDate no sean nulas
+  String fechaEntrada = checkInDate != null
+      ? checkInDate!.toIso8601String().split('T')[0]  // Formato YYYY-MM-DD
+      : '';
+
+  String fechaSalida = checkOutDate != null
+      ? checkOutDate!.toIso8601String().split('T')[0]  // Formato YYYY-MM-DD
+      : '';
+
   // Valores a enviar al backend
   final data = {
     'usuario': '1',
     'dni': dni,
     'email': correo,
     'habitacion': widget.habitacionNumero,
-    'fecha_entrada': checkInDate!.toIso8601String().split('T')[0],
-    'fecha_salida': checkOutDate!.toIso8601String().split('T')[0],
+    'fecha_entrada': fechaEntrada,  // Fecha de entrada en formato adecuado
+    'fecha_salida': fechaSalida,  // Fecha de salida en formato adecuado
     'num_adultos': adultos.toString(),
     'num_ninos': ninos.toString(),
     'estado': 'pendiente',
@@ -265,17 +274,9 @@ Future<void> _createReservation(String paymentId) async {
                   },
                   onSaved: (value) => correo = value!,
                 ),
-                SizedBox(height: 16),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Número de teléfono'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa tu número de teléfono';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) => telefono = value!,
-                ),
+             
+                  
+                
                 SizedBox(height: 16),
 
                 // Campos para cantidad de adultos y niños

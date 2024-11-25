@@ -58,8 +58,9 @@ class DetalleHabitacionScreen extends StatelessWidget {
                       SizedBox(height: 8),
                       Text('Descripción: ${habitacion.descripcion}', style: TextStyle(fontSize: 16)),
                       SizedBox(height: 8),
+                      // Aquí se muestra si la habitación está disponible
                       Text(
-                        'Disponible: ${habitacion.disponible == 1 ? 'Sí' : 'No'}',
+                        'Disponible: ${habitacion.disponible ? 'Sí' : 'No'}', 
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -69,16 +70,30 @@ class DetalleHabitacionScreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
 
+            // Mostrar las fechas de check-in y check-out
+            Text(
+              'Fecha de check-in: ${checkInDate.toLocal().toString().split(' ')[0]}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Fecha de check-out: ${checkOutDate.toLocal().toString().split(' ')[0]}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+
             // Botón para reservar la habitación
             ElevatedButton(
-              onPressed: () {
+              onPressed: habitacion.disponible ? () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ReservaHabitacionScreen(
                     habitacionNumero: habitacion.numero.toString(),
                     precioPorNoche: habitacion.precioNoche,
+                    checkInDate: checkInDate, // Pasar check-in
+                    checkOutDate: checkOutDate, // Pasar check-out
                   ),
                 ));
-              },
+              } : null, // Deshabilitar botón si no está disponible
               child: Text('Reservar habitación'),
             ),
           ],

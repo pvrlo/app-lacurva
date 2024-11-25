@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:la_curva/pago_completado.dart';
-import 'seleccionar_fechas.dart';
+import 'codigo_reseña.dart';  // Importamos la pantalla de Hacer Reseña
+import 'seleccionar_fechas.dart'; // Importamos la pantalla de seleccionar fechas
 import 'login.dart'; // Importamos la pantalla de inicio de sesión
+import 'pago_completado.dart'; // Importamos la pantalla de pago completado
 
 void main() {
   runApp(MyApp());
@@ -16,9 +17,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BienvenidaScreen(),
+      home: BienvenidaScreen(), // Página de bienvenida
       routes: {
         '/pago_completado': (context) => PagoCompletadoScreen(), // Ruta para pago completado
+        '/hacer_resena': (context) => HacerResenaScreen(), // Ruta para hacer una reseña
       },
     );
   }
@@ -42,7 +44,7 @@ class BienvenidaScreen extends StatelessWidget {
                 );
               },
               child: Image.asset(
-                'images/person.png', // Reemplaza 'images/person.png' con la ruta de tu imagen
+                'images/person.png', // Ruta de la imagen de perfil
                 height: 30,
                 width: 30,
               ),
@@ -68,6 +70,17 @@ class BienvenidaScreen extends StatelessWidget {
                 );
               },
               child: Text("Seleccionar Fechas"),
+            ),
+            SizedBox(height: 20), // Espacio entre los botones
+            ElevatedButton(
+              onPressed: () {
+                // Navegar a la pantalla para hacer una reseña
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HacerResenaScreen()),
+                );
+              },
+              child: Text("Hacer Reseña"),
             ),
           ],
         ),

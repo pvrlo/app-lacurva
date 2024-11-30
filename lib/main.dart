@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'codigo_reseña.dart';  // Importamos la pantalla de Hacer Reseña
+import 'codigo_reseña.dart'; // Importamos la pantalla de Hacer Reseña
 import 'seleccionar_fechas.dart'; // Importamos la pantalla de seleccionar fechas
 import 'login.dart'; // Importamos la pantalla de inicio de sesión
 import 'pago_completado.dart'; // Importamos la pantalla de pago completado
@@ -7,6 +7,9 @@ import 'pago_completado.dart'; // Importamos la pantalla de pago completado
 void main() {
   runApp(MyApp());
 }
+
+// Simulamos un estado de sesión
+bool isUserLoggedIn = false; // Cambia esta variable según el estado real
 
 class MyApp extends StatelessWidget {
   @override
@@ -27,6 +30,22 @@ class MyApp extends StatelessWidget {
 }
 
 class BienvenidaScreen extends StatelessWidget {
+  void _navigateBasedOnAuth(BuildContext context, Widget screen) {
+    if (isUserLoggedIn) {
+      // Usuario autenticado: Navegamos a la pantalla deseada
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => screen),
+      );
+    } else {
+      // Usuario no autenticado: Redirigir a la pantalla de inicio de sesión
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,22 +82,16 @@ class BienvenidaScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navegar a la pantalla de seleccionar fechas
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SeleccionarFechasScreen()),
-                );
+                // Verificamos autenticación antes de navegar
+                _navigateBasedOnAuth(context, SeleccionarFechasScreen());
               },
               child: Text("Seleccionar Fechas"),
             ),
             SizedBox(height: 20), // Espacio entre los botones
             ElevatedButton(
               onPressed: () {
-                // Navegar a la pantalla para hacer una reseña
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HacerResenaScreen()),
-                );
+                // Verificamos autenticación antes de navegar
+                _navigateBasedOnAuth(context, HacerResenaScreen());
               },
               child: Text("Hacer Reseña"),
             ),

@@ -1,9 +1,12 @@
+import 'dart:convert'; // Para JSON
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // Paquete HTTP
 
 class HacerResenaPage extends StatefulWidget {
   final String codigo;
+  final String idUsuario;
 
-  HacerResenaPage({required this.codigo});
+  HacerResenaPage({required this.codigo, required this.idUsuario});
 
   @override
   _HacerResenaPageState createState() => _HacerResenaPageState();
@@ -12,14 +15,14 @@ class HacerResenaPage extends StatefulWidget {
 class _HacerResenaPageState extends State<HacerResenaPage> {
   final TextEditingController _comentarioController = TextEditingController();
 
-  int _calificacionGeneral = 3;
-  int _limpieza = 3;
-  int _confort = 3;
-  int _ubicacion = 3;
-  int _instalaciones = 3;
-  int _personal = 3;
-  int _relacionCalidadPrecio = 3;
-  int _wifi = 3;
+  int _calificacionGeneral = 0;
+  int _limpieza = 0;
+  int _confort = 0;
+  int _ubicacion = 0;
+  int _instalaciones = 0;
+  int _personal = 0;
+  int _relacionCalidadPrecio = 0;
+  int _wifi = 0;
 
   String? _errorMessage;
 
@@ -35,8 +38,55 @@ class _HacerResenaPageState extends State<HacerResenaPage> {
       _errorMessage = null;
     });
 
-    // Aquí deberías enviar los datos al servidor o procesarlos según tus necesidades.
-    // Simulamos una respuesta exitosa del servidor:
+    // URL del archivo PHP en tu servidor
+    final url = Uri.parse('http://localhost/la_curva/guardar_reseña.php');
+
+    // Datos que enviarás al servidor
+    final requestData = {
+      'usuario': widget.idUsuario, // Aquí va el ID de usuario, por ejemplo, de tu sistema de autenticación
+      'reserva': widget.codigo, // Código de reserva que pasaste
+      'calificacion_general': _calificacionGeneral,
+      'comentario': _comentarioController.text,
+      'limpieza': _limpieza,
+      'confort': _confort,
+      'ubicacion': _ubicacion,
+      'instalaciones': _instalaciones,
+      'personal': _personal,
+      'relacion_calidad_precio': _relacionCalidadPrecio,
+      'wifi': _wifi,
+    };
+
+    try {
+      // Enviar solicitud POST al servidor
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'}, // Encabezados
+        body: json.encode(requestData), // Datos en formato JSON
+      );
+
+      // Verificar respuesta del servidor
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        if (responseBody['success']) {
+          _mostrarDialogoExito();
+        } else {
+          setState(() {
+            _errorMessage = responseBody['message'] ?? "Error desconocido.";
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = "Error en el servidor (${response.statusCode}).";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Error de conexión: $e";
+      });
+    }
+  }
+
+  void _mostrarDialogoExito() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -47,7 +97,7 @@ class _HacerResenaPageState extends State<HacerResenaPage> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pop(context); // Volver a la pantalla anterior
+                Navigator.pop(context); // Regresar a la pantalla anterior
               },
               child: Text('Aceptar'),
             ),

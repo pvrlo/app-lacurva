@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';  // Importamos para manejar JSON
+import 'dart:convert'; // Importamos para manejar JSON
 import 'hacer_reseña.dart'; // Asegúrate de tener este archivo importado
 
 class HacerResenaScreen extends StatefulWidget {
@@ -34,10 +34,18 @@ class _HacerResenaScreenState extends State<HacerResenaScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['existe']) {
+          
+          String idUsuario = responseBody['idUsuario'] ?? 'Anónimo'; // Fallback si no hay nombre
+
           // Código correcto, redirigir a la página de reseña
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HacerResenaPage(codigo: codigo)),
+            MaterialPageRoute(
+              builder: (context) => HacerResenaPage(
+                codigo: codigo,
+                idUsuario: idUsuario, // Pasamos el nombre del usuario
+              ),
+            ),
           );
         } else {
           setState(() {

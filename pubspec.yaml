@@ -20,6 +20,8 @@ dependencies:
   http_parser: ^4.0.2
   path_provider: ^2.0.15
   syncfusion_flutter_charts: ^22.1.50
+  fluttertoast: ^8.2.1
+  shared_preferences: ^2.0.18
 
 dev_dependencies:
   flutter_test:

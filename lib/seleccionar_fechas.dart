@@ -1,4 +1,5 @@
 // seleccionar_fechas_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'ver_habitaciones_screen.dart';
@@ -50,6 +51,7 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
     } else {
       setState(() {
         _checkInDate = selectedDate;
+        print('SeleccionarFechasScreen - checkInDate: $_checkInDate');
       });
     }
   }
@@ -86,6 +88,7 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
 
     setState(() {
       _checkOutDate = selectedDate;
+      print('SeleccionarFechasScreen - checkOutDate: $_checkOutDate');
     });
   }
 
@@ -120,22 +123,26 @@ class _SeleccionarFechasScreenState extends State<SeleccionarFechasScreen> {
             ),
             SizedBox(height: 40),
             ElevatedButton(
-  onPressed: (_checkInDate != null && _checkOutDate != null)
-      ? () {
-          // Navega a VerHabitacionesScreen y pasa las fechas
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => VerHabitacionesScreen(
-                checkInDate: _checkInDate!, // Pasa la fecha como no nula
-                checkOutDate: _checkOutDate!, // Pasa la fecha como no nula
-              ),
-            ),
-          );
-        }
-      : null,
-  child: Text('Ver habitaciones disponibles'),
-)
+              onPressed: (_checkInDate != null && _checkOutDate != null)
+                  ? () {
+                      print(
+                          'SeleccionarFechasScreen - checkInDate (antes de pasar): $_checkInDate');
+                      print(
+                          'SeleccionarFechasScreen - checkOutDate (antes de pasar): $_checkOutDate');
+                      // Navega a VerHabitacionesScreen y pasa las fechas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VerHabitacionesScreen(
+                            checkInDate: _checkInDate!,
+                            checkOutDate: _checkOutDate!,
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
+              child: Text('Ver habitaciones disponibles'),
+            )
           ],
         ),
       ),

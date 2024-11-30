@@ -1,17 +1,22 @@
+// ver_habitaciones_screen.dart
+
 import 'package:flutter/material.dart';
-import '../services/habitacion_service.dart'; // Importa el servicio
-import '../models/habitacion.dart'; // Importa el modelo Habitacion
-import 'detalle_habitacion.dart'; // Importa la pantalla de detalles
+import '../services/habitacion_service.dart'; 
+import '../models/habitacion.dart'; 
+import 'detalle_habitacion.dart'; 
 
 class VerHabitacionesScreen extends StatelessWidget {
-  final HabitacionService habitacionService = HabitacionService(); // Instancia del servicio
+  final HabitacionService habitacionService = HabitacionService();
   final DateTime checkInDate;
   final DateTime checkOutDate;
 
   VerHabitacionesScreen({
     required this.checkInDate,
     required this.checkOutDate,
-  });
+  }) {
+    print('VerHabitacionesScreen - checkInDate: $checkInDate');
+    print('VerHabitacionesScreen - checkOutDate: $checkOutDate');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,7 @@ class VerHabitacionesScreen extends StatelessWidget {
         title: Text('Habitaciones disponibles'),
       ),
       body: FutureBuilder<List<Habitacion>>(
-        future: habitacionService.fetchHabitaciones(), // Llama al servicio para obtener las habitaciones
+        future: habitacionService.fetchHabitaciones(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -31,10 +36,10 @@ class VerHabitacionesScreen extends StatelessWidget {
           } else {
             final habitaciones = snapshot.data!;
 
-            // Filtrar solo las habitaciones disponibles (disponible == true)
-            final habitacionesDisponibles = habitaciones.where((habitacion) => habitacion.disponible).toList();
+            final habitacionesDisponibles = habitaciones
+                .where((habitacion) => habitacion.disponible)
+                .toList();
 
-            // Si no hay habitaciones disponibles después de filtrar
             if (habitacionesDisponibles.isEmpty) {
               return Center(child: Text('No hay habitaciones disponibles'));
             }
@@ -47,15 +52,33 @@ class VerHabitacionesScreen extends StatelessWidget {
                   margin: EdgeInsets.all(10),
                   child: ListTile(
                     leading: habitacion.imagen.isNotEmpty
-                        ? Image.network(habitacion.imagen) // Si tiene imagen, la carga
-                        : Container(color: Colors.grey[200], child: Icon(Icons.image, size: 40)), // Si no, un ícono
+                        ? Image.network(
+                            habitacion.imagen,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.error),
+                                ),
+                          )
+                        : const Icon(Icons.hotel, size: 40), 
                     title: Text('Habitación ${habitacion.numero}'),
                     subtitle: Text(
                         'Tipo: ${habitacion.tipo}\nCapacidad: ${habitacion.capacidad}\nPrecio por noche: \$${habitacion.precioNoche}'),
                     trailing: ElevatedButton(
                       child: Text('Ver detalles'),
                       onPressed: () {
-                        // Navega a DetalleHabitacionScreen y pasa las fechas
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => DetalleHabitacionScreen(

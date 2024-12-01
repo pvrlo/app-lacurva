@@ -7,7 +7,6 @@ import 'panel_admin.dart'; // Importar la pantalla de panel administrativo
 import 'main.dart'; // Importar la pantalla principal para clientes
 import 'registro.dart'; // Importar la pantalla de registro
 
-
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -143,6 +142,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Inicio de Sesión'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Ícono de retroceso
+          onPressed: () {
+            // Redirigir al 'main.dart' (pantalla principal) al presionar el botón de retroceso
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => BienvenidaScreen()),  // Redirige a la pantalla principal
+            );
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

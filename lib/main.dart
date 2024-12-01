@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 import 'codigo_reseña.dart'; // Importamos la pantalla de Hacer Reseña
 import 'seleccionar_fechas.dart'; // Importamos la pantalla de seleccionar fechas
 import 'login.dart'; // Importamos la pantalla de inicio de sesión
@@ -7,9 +8,6 @@ import 'pago_completado.dart'; // Importamos la pantalla de pago completado
 void main() {
   runApp(MyApp());
 }
-
-// Simulamos un estado de sesión
-bool isUserLoggedIn = false; // Cambia esta variable según el estado real
 
 class MyApp extends StatelessWidget {
   @override
@@ -30,20 +28,43 @@ class MyApp extends StatelessWidget {
 }
 
 class BienvenidaScreen extends StatelessWidget {
-  void _navigateBasedOnAuth(BuildContext context, Widget screen) {
-    if (isUserLoggedIn) {
-      // Usuario autenticado: Navegamos a la pantalla deseada
+  // Verifica si el usuario está autenticado como cliente
+  Future<bool> _isAuthenticatedAsClient() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    String role = prefs.getString('role') ?? '';
+    return isLoggedIn && role == 'cliente';
+  }
+
+  // Lógica de navegación basada en la autenticación
+  Future<void> _navigateBasedOnAuth(BuildContext context, Widget screen) async {
+    bool isClient = await _isAuthenticatedAsClient();
+    if (isClient) {
+      // Si está autenticado y es cliente, navega a la pantalla solicitada
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => screen),
       );
     } else {
-      // Usuario no autenticado: Redirigir a la pantalla de inicio de sesión
+      // Si no está autenticado, navega al formulario de inicio de sesión
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     }
+  }
+
+  // Función para cerrar sesión
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Elimina todos los datos de la sesión
+
+    // Redirigir a la pantalla de inicio de sesión
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+      (route) => false, // Elimina todas las rutas anteriores
+    );
   }
 
   @override
@@ -54,19 +75,36 @@ class BienvenidaScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('La Curva Apartamentos'),
-            GestureDetector(
-              onTap: () {
-                // Navegar a la pantalla de inicio de sesión
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-              child: Image.asset(
-                'images/person.png', // Ruta de la imagen de perfil
-                height: 30,
-                width: 30,
-              ),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Navegar a la pantalla de inicio de sesión
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  },
+                  child: Image.asset(
+                    'images/person.png', // Ruta de la imagen de perfil
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+                SizedBox(width: 10), // Espacio entre la imagen y el botón
+                TextButton(
+                  onPressed: () => _logout(context), // Llama a la función para cerrar sesión
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // Eliminar relleno
+                    minimumSize: Size(50, 30), // Tamaño mínimo
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Ajustar área táctil
+                  ),
+                  child: Text(
+                    "Cerrar sesión",
+                    style: TextStyle(color: Colors.blue, fontSize: 14),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -82,7 +120,6 @@ class BienvenidaScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Verificamos autenticación antes de navegar
                 _navigateBasedOnAuth(context, SeleccionarFechasScreen());
               },
               child: Text("Seleccionar Fechas"),
@@ -90,7 +127,6 @@ class BienvenidaScreen extends StatelessWidget {
             SizedBox(height: 20), // Espacio entre los botones
             ElevatedButton(
               onPressed: () {
-                // Verificamos autenticación antes de navegar
                 _navigateBasedOnAuth(context, HacerResenaScreen());
               },
               child: Text("Hacer Reseña"),

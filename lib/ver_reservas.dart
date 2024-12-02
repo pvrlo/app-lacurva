@@ -8,7 +8,6 @@ class VerReservasScreen extends StatefulWidget {
 }
 
 class _VerReservasScreenState extends State<VerReservasScreen> {
-  // Variable para almacenar las reservas
   List<dynamic> reservas = [];
   bool isLoading = true;
   String errorMessage = '';
@@ -19,9 +18,8 @@ class _VerReservasScreenState extends State<VerReservasScreen> {
     fetchReservas();
   }
 
-  // Función para hacer la solicitud HTTP
   Future<void> fetchReservas() async {
-    final url = 'http://localhost/la_curva/obtener_reservas.php'; // Reemplaza con la URL de tu API
+    final url = 'http://localhost/la_curva/obtener_reservas.php';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -34,7 +32,8 @@ class _VerReservasScreenState extends State<VerReservasScreen> {
         });
       } else {
         setState(() {
-          errorMessage = 'Error al cargar las reservas. Código de estado: ${response.statusCode}';
+          errorMessage =
+              'Error al cargar las reservas. Código de estado: ${response.statusCode}';
           isLoading = false;
         });
         print('Error al cargar las reservas. Código de estado: ${response.statusCode}');
@@ -66,60 +65,63 @@ class _VerReservasScreenState extends State<VerReservasScreen> {
                       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: ListTile(
                         contentPadding: EdgeInsets.all(16),
-                        title: Row(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Número de habitación en grande
                             Text(
-                              '${reserva['habitacion']}',
+                              'Habitación: ${reserva['habitacion']} - ${reserva['nombre_habitacion']}',
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(width: 16),
-                            // Fecha de entrada y salida al lado del número de habitación
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Entrada: ${reserva['fecha_entrada']}',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                Text(
-                                  'Salida: ${reserva['fecha_salida']}',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
+                            SizedBox(height: 8),
+                            Text(
+                              'Tipo: ${reserva['tipo']}',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            Text(
+                              'Capacidad: ${reserva['capacidad']} personas',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            Text(
+                              'Precio por noche: \$${reserva['precio_noche']}',
+                              style: TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Nombre de quien hizo la reserva y código de la reserva
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Nombre: ${reserva['nombre']}',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                  Text(
-                                    'Código: ${reserva['codigo']}',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                              // Estado de la reserva
                               Text(
-                                'Estado: ${reserva['estado']}',
+                                'Entrada: ${reserva['fecha_entrada']}',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              Text(
+                                'Salida: ${reserva['fecha_salida']}',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Reservado por: ${reserva['nombre_cliente']}',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Correo: ${reserva['correo_cliente']}',
                                 style: TextStyle(fontSize: 14),
                               ),
                             ],
                           ),
                         ),
+                        leading: reserva['imagen'] != null
+                            ? Image.network(
+                                reserva['imagen'],
+                                width: 80,
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(Icons.bed),
                       ),
                     );
                   },

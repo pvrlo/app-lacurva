@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'gestionar_habitacion.dart'; // Importar la pantalla de gestionar habitaciones
 import 'gestionar_reservas.dart'; // Importar la pantalla para gestionar reservas
 import 'ver_estadisticas.dart'; // Importar la pantalla para ver estadísticas
+import 'gestionar_usuarios.dart'; // Importar la pantalla para gestionar usuarios
 
 class PanelAdminScreen extends StatelessWidget {
   @override
@@ -50,6 +51,17 @@ class PanelAdminScreen extends StatelessWidget {
                 );
               },
               child: Text('Ver Estadísticas'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navegar a la pantalla de gestionar usuarios
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GestionarUsuariosScreen()),
+                );
+              },
+              child: Text('Gestionar Usuarios'),
             ),
           ],
         ),
